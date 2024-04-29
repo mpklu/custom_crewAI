@@ -3,6 +3,7 @@
 __pycache__
 dist/
 .env
+.venv/
 assets/*
 .idea
 test/

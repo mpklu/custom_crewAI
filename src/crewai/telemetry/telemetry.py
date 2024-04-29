@@ -41,6 +41,7 @@ class Telemetry:
     def __init__(self):
         self.ready = False
         self.trace_set = False
+        self.enabled = os.getenv("ENABLE_Telemetry", False)
         try:
             telemetry_endpoint = "https://telemetry.crewai.com:4319"
             self.resource = Resource(
@@ -66,7 +67,7 @@ class Telemetry:
             self.ready = False
 
     def set_tracer(self):
-        if self.ready and not self.trace_set:
+        if self.ready and not self.trace_set and self.enabled:
             try:
                 trace.set_tracer_provider(self.provider)
                 self.trace_set = True
@@ -76,7 +77,7 @@ class Telemetry:
 
     def crew_creation(self, crew):
         """Records the creation of a crew."""
-        if self.ready:
+        if self.ready and self.enabled:
             try:
                 tracer = trace.get_tracer("crewai.telemetry")
                 span = tracer.start_span("Crew Created")
@@ -143,7 +144,7 @@ class Telemetry:
 
     def tool_repeated_usage(self, llm: Any, tool_name: str, attempts: int):
         """Records the repeated usage 'error' of a tool by an agent."""
-        if self.ready:
+        if self.ready and self.enabled:
             try:
                 tracer = trace.get_tracer("crewai.telemetry")
                 span = tracer.start_span("Tool Repeated Usage")
@@ -165,7 +166,7 @@ class Telemetry:
 
     def tool_usage(self, llm: Any, tool_name: str, attempts: int):
         """Records the usage of a tool by an agent."""
-        if self.ready:
+        if self.ready and self.enabled:
             try:
                 tracer = trace.get_tracer("crewai.telemetry")
                 span = tracer.start_span("Tool Usage")
@@ -187,7 +188,7 @@ class Telemetry:
 
     def tool_usage_error(self, llm: Any):
         """Records the usage of a tool by an agent."""
-        if self.ready:
+        if self.ready and self.enabled:
             try:
                 tracer = trace.get_tracer("crewai.telemetry")
                 span = tracer.start_span("Tool Usage Error")
@@ -209,7 +210,7 @@ class Telemetry:
         """Records the complete execution of a crew.
         This is only collected if the user has opted-in to share the crew.
         """
-        if (self.ready) and (crew.share_crew):
+        if (self.ready) and (crew.share_crew) and self.enabled:
             try:
                 tracer = trace.get_tracer("crewai.telemetry")
                 span = tracer.start_span("Crew Execution")
@@ -254,9 +255,11 @@ class Telemetry:
                                 "async_execution?": task.async_execution,
                                 "output": task.expected_output,
                                 "agent_role": task.agent.role if task.agent else "None",
-                                "context": [task.description for task in task.context]
-                                if task.context
-                                else "None",
+                                "context": (
+                                    [task.description for task in task.context]
+                                    if task.context
+                                    else "None"
+                                ),
                                 "tools_names": [
                                     tool.name.casefold() for tool in task.tools
                                 ],
@@ -270,7 +273,7 @@ class Telemetry:
                 pass
 
     def end_crew(self, crew, output):
-        if (self.ready) and (crew.share_crew):
+        if (self.ready) and (crew.share_crew) and self.enabled:
             try:
                 self._add_attribute(
                     crew._execution_span,

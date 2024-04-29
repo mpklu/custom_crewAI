@@ -1,0 +1,17 @@
+agentops==0.1.6
+appdirs==1.4.4
+click==8.1.7
+crewai-tools==0.1.7
+embedchain==0.1.98
+instructor==0.5.2
+langchain
+langchain-community
+langchain-core
+langchain-openai
+openai
+opentelemetry-api==1.22.0
+opentelemetry-exporter-otlp-proto-http==1.22.0
+opentelemetry-sdk==1.22.0
+pydantic==2.7.0
+python-dotenv==1.0.0
+regex
